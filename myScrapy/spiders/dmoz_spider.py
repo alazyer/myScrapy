@@ -1,5 +1,7 @@
 import scrapy
 
+from myScrapy.items import DmozItem
+
 class DmozSpider(scrapy.Spider):
     name = "dmoz"
     allowed_domains = ["dmoz.org"]
@@ -9,6 +11,9 @@ class DmozSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        filename = response.url.split("/")[-2] + '.html'
-        with open(filename, 'wb') as f:
-            f.write(response.body)
+        for selector in response.xpath('//ul/li'):
+	    item = DmozItem()
+            item['title'] = selector.xpath('a/text()').extract()
+	    item['link'] = selector.xpath('a/@href').extract()
+	    item['desc'] = selector.xpath('text()').extract()
+	    yield item
